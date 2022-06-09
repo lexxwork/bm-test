@@ -12,6 +12,8 @@
   line-height: 17px;
 
   .buton {
+    outline-offset: -2px;
+    transition: outline 0.1s;
     height: 100%;
     padding: 8px 8px;
     background: #ffffff;
@@ -20,7 +22,11 @@
     align-items: center;
     cursor: pointer;
     justify-content: space-between;
-
+    &:focus,
+    &:hover {
+      outline: 2px solid #3a80ba;
+      border-radius: 10px;
+    }
     .arrow {
       margin-left: 8px;
       color: #3a80ba;

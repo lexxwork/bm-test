@@ -11,12 +11,14 @@
     display: flex;
 
     input {
+      outline-offset: -2px;
       height: 48px;
       padding: 8px 8px;
       font: 1rem/1.4 'Montserrat', sans-serif;
       background-color: #ffffff;
       border: none;
       outline: none;
+      transition: outline 0.1s;
 
       &::placeholder {
         color: #979797;
@@ -24,6 +26,10 @@
         font-weight: 400;
         font-size: 14px;
         line-height: 17px;
+      }
+      &:focus, &:hover {
+        outline: 2px solid #3a80ba;
+        border-radius: 10px;
       }
     }
 
