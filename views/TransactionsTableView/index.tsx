@@ -63,7 +63,6 @@ export const TransactionsTableView: React.FC = () => {
       if (pages[currentPage]?.value === 0 || (currentPage === 0 && !cursorsInfo?.hasPrevious)) {
         return;
       }
-      console.log('click previous', currentPage);
       if (currentPage > 0) {
         setCurrentPage((state) => state - 1);
         return;
@@ -84,7 +83,6 @@ export const TransactionsTableView: React.FC = () => {
       if (!cursorsInfo?.hasNext) {
         return;
       }
-      console.log('click next', currentPage);
       setPagesOffset((state) => state + pagesMax);
       setCurrentPage(0);
       setActiveCursor({ next: cursorsInfo.next });
@@ -92,10 +90,18 @@ export const TransactionsTableView: React.FC = () => {
     [cursorsInfo, pages.length]
   );
 
+  const onSearch = useCallback((filterQuery: IFilterQuery) => {
+    setFilterQuery(filterQuery);
+    setPagesLength(0);
+    setPagesOffset(0);
+    setCurrentPage(0);
+    setActiveCursor(undefined);
+  }, []);
+
   return (
     <div>
       <div className={styles.containerSearch}>
-        <SearchFilter options={filter} validateFn={validateSearch} onSearch={setFilterQuery} />
+        <SearchFilter options={filter} validateFn={validateSearch} onSearch={onSearch} />
       </div>
       <TransactionsTableFC
         rowsLimit={rowsLimit}
