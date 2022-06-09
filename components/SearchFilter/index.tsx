@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './index.module.scss';
 import { Select, IOption } from 'components/Select';
 
@@ -28,7 +28,7 @@ export const SearchFilter: React.FC<IFilterProps> = ({ options, onSearch, valida
     onSearch({ query: queryValue.trim(), filter: filterSelected.value });
   };
 
-  useCallback(() => {
+  useEffect(() => {
     const validate = () => {
       const defaultCheck: boolean = !!queryValue.trim() && !!filterSelected.value;
       const customCheck: boolean = !!validateFn
