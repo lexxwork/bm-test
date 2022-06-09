@@ -1,8 +1,9 @@
 import { SearchFilter, IFilterQuery } from 'components/SearchFilter';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Pagination } from 'components/Pagination';
 import styles from './index.module.scss';
 import { TransactionsTableFC } from 'views/TransactionsTableView/TransactionsTableFC';
+import useWindowSize from 'use/useWindowSize';
 
 import type { CursorPagesInfo, CursorsInfo } from 'views/TransactionsTableView/TransactionsTableFC';
 import type { IOption } from 'components/Select';
@@ -24,11 +25,14 @@ function pagesGen(pagesLength: number, offset: number): IPage[] {
   return Array.from(Array(pagesLength), (_, x) => ({ value: offset + x + 1, id: x }));
 }
 
+const windowMinHeight = 640;
 const pagesMax = 5;
-const rowsLimit = 15;
-const fetchLimit = pagesMax * rowsLimit;
+const rowsLimitMax = 15;
+const rowsLimitMin = 10;
+const fetchLimit = pagesMax * rowsLimitMax;
 
 export const TransactionsTableView: React.FC = () => {
+  const [rowsLimit, setRowsLimit] = useState(rowsLimitMax);
   const [pagesOffset, setPagesOffset] = useState(0);
   const [pagesLength, setPagesLength] = useState(pagesMax);
   const [pages, setPages] = useState<IPage[]>(pagesGen(pagesLength, pagesOffset));
@@ -97,6 +101,19 @@ export const TransactionsTableView: React.FC = () => {
     setCurrentPage(0);
     setActiveCursor(undefined);
   }, []);
+
+  const { height } = useWindowSize();
+  useEffect(() => {
+    setRowsLimit((state) => {
+      if (height <= windowMinHeight && state !== rowsLimitMin) {
+        return rowsLimitMin;
+      }
+      if (height > windowMinHeight && state !== rowsLimitMax) {
+        return rowsLimitMax;
+      }
+      return state;
+    });
+  }, [height]);
 
   return (
     <div>
