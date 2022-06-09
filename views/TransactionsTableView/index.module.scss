@@ -1,0 +1,19 @@
+.containerSearch {
+  margin-bottom: 16px;
+}
+
+.containerPagination {
+  margin-top: 70px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .containerSearch {
+    margin-bottom: 8px;
+  }
+
+  .containerPagination {
+    margin-top: 20px;
+  }
+}

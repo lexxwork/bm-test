@@ -1,0 +1,25 @@
+{
+  // "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+  // "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+  // "javascript.format.semicolons": "remove",
+  // "javascript.validate.enable": false,
+
+  "prettier.printWidth": 100,
+
+  // "eslint.nodePath": "node_modules",
+  // "eslint.workingDirectories": ["src"],
+  // "eslint.packageManager": "pnpm",
+  // "eslint.format.enable": true,
+  // "eslint.codeAction.showDocumentation": {
+  //   "enable": true
+  // },
+
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // "editor.codeActionsOnSave": {
+  //   "source.fixAll.eslint": true
+  // },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

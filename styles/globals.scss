@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Roboto:wght@400;500&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font: 1rem/1.4 'Montserrat', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+}
+
+#__next {
+  width: 100%;
+  min-height: 100vh;
+}
