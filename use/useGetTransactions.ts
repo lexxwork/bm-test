@@ -2,6 +2,7 @@ import useSWR, { Fetcher } from 'swr';
 import { post } from 'lib/fetcher';
 import type { IFilterQuery } from 'components/SearchFilter';
 import type { ITransactionsFilterQuery } from 'pages/api/transactions';
+import { ResponseError } from 'lib/fetcher';
 
 import type { IPaginateResult, ITransaction } from 'models/Transaction';
 // import type { ITableRowItem } from 'components/Table';
@@ -16,7 +17,7 @@ import type { IPaginateResult, ITransaction } from 'models/Transaction';
 export type SWRResponse<T> = {
   data: T | undefined;
   isLoading: boolean;
-  error: Error;
+  error: ResponseError;
 };
 
 export type UseTransactionsResp = SWRResponse<IPaginateResult<ITransaction>>;
