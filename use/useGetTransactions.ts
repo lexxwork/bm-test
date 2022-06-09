@@ -23,8 +23,10 @@ export type SWRResponse<T> = {
 export type UseTransactionsResp = SWRResponse<IPaginateResult<ITransaction>>;
 
 export default function useGetTransactions(args: ITransactionsFilterQuery): UseTransactionsResp {
-  const { data, error } = useSWR(args, (options) =>
-    post<IPaginateResult<ITransaction>>('/api/transactions', options)
+  const { data, error } = useSWR(
+    args,
+    (options) => post<IPaginateResult<ITransaction>>('/api/transactions', options),
+    { revalidateOnFocus: false }
   );
   return {
     data: data?.result,
