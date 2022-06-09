@@ -45,7 +45,7 @@ export const TransactionsTableFC = memo<TransactionsTableOpts>(
     }
 
     useEffect(() => {
-      if (!cursors || !pagesCount) return;
+      // if (!cursors || !pagesCount) return;
       statesCallback({ cursors, pagesCount });
     }, [cursors, pagesCount, statesCallback]);
 
@@ -55,6 +55,7 @@ export const TransactionsTableFC = memo<TransactionsTableOpts>(
       return <div>{errorMessage}</div>;
     }
     if (!data) return <div>something went wrong</div>;
+    if (!data.results.length) return <div>no results</div>;
 
     return <Table data={frame} header={header} options={{ key: 'hash' }} />;
   }
