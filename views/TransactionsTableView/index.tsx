@@ -1,15 +1,13 @@
 import { SearchFilter, IFilterQuery } from 'components/SearchFilter';
-import { useState, useCallback, memo, useEffect, useRef } from 'react';
-import { ITableRowItem, Table } from 'components/Table';
+import { useState, useCallback } from 'react';
 import { Pagination } from 'components/Pagination';
 import styles from './index.module.scss';
-import { header } from './tableSettings';
-import useGetTransactions from 'use/useGetTransactions';
+import { TransactionsTableFC } from 'views/TransactionsTableView/TransactionsTableFC';
 
+import type { CursorPagesInfo, CursorsInfo } from 'views/TransactionsTableView/TransactionsTableFC';
 import type { IOption } from 'components/Select';
 import type { ITransaction } from 'models/Transaction';
 import type { IPage } from 'components/Pagination';
-import type { ITransactionsFilterQuery } from 'pages/api/transactions';
 
 type IOptionTransaction = IOption & { value: keyof ITransaction };
 
@@ -20,70 +18,7 @@ const filter: IOptionTransaction[] = [
   { value: 'hash', title: 'Transaction ID' },
 ];
 
-// export type FilterIds = [keyof ITransaction][]  ;
 export const filterIds: string[] = filter.map((x) => x.value);
-
-type CursorsInfo = ITransactionsFilterQuery['cursor'];
-export type CursorPagesInfo =
-  | (CursorsInfo & {
-      hasPrevious: boolean;
-      hasNext: boolean;
-    })
-  | undefined;
-
-type TransactionsTableOpts = ITransactionsFilterQuery & {
-  // cursor: ITransactionsFilterQuery['cursor'];
-  filterQuery: IFilterQuery | undefined;
-  frameNumber: number;
-  statesCallback: (options: { cursors: CursorPagesInfo; pagesCount: number }) => void;
-};
-
-// eslint-disable-next-line react/display-name
-const TransactionsTableFC = memo<TransactionsTableOpts>(
-  ({ filterQuery, cursor, limit = 100, frameNumber, statesCallback }) => {
-    const { data, isLoading, error } = useGetTransactions({ filterQuery, cursor, limit });
-    // hasNext: boolean;
-    // hasPrevious: boolean;
-    // next?: string;
-    // previous?: string;
-    // results: T[];
-
-    // const prevDataRef = useRef<TransactionExt>();
-    const cursorsRef = useRef<CursorPagesInfo>();
-    let frame: ITableRowItem[] = [];
-    let pagesCount = 0;
-    if (data) {
-      const { results, next, previous, hasPrevious, hasNext } = data;
-      cursorsRef.current = { next, previous, hasPrevious, hasNext };
-
-      if (results && results.length) {
-        pagesCount = Math.ceil(results.length / rowsLimit);
-        frame = results.slice(
-          frameNumber * rowsLimit,
-          frameNumber * rowsLimit + rowsLimit
-        ) as any[];
-        // if (pagesCount >= pagesMax && frame.length >= rowsLimit) {
-        //   // cursorRef.current = results[results.length - 1]._id;
-        // }
-      }
-    } else {
-      cursorsRef.current = undefined;
-    }
-
-    useEffect(() => {
-      if (!cursorsRef.current || !pagesCount) return;
-      statesCallback({ cursors: cursorsRef.current, pagesCount });
-    }, [cursorsRef, pagesCount, statesCallback]);
-
-    if (isLoading) return <div>loading</div>;
-    if (error) return <div>{error.message}</div>;
-    if (!data) return <div>something went wrong</div>;
-    // if (!data.length) {
-    //   //TODO: is end, don't update Table
-    // }
-    return <Table data={frame} header={header} options={{ key: 'hash' }} />;
-  }
-);
 
 function pagesGen(pagesLength: number, offset: number): IPage[] {
   return Array.from(Array(pagesLength), (_, x) => ({ value: offset + x + 1, id: x }));
@@ -163,6 +98,7 @@ export const TransactionsTableView: React.FC = () => {
         <SearchFilter options={filter} validateFn={validateSearch} onSearch={setFilterQuery} />
       </div>
       <TransactionsTableFC
+        rowsLimit={rowsLimit}
         filterQuery={filterQuery}
         statesCallback={onNextCursorCb}
         cursor={activeCursor}
