@@ -46,8 +46,8 @@ const handler: NextApiHandler = async (
   req: NextApiRequest,
   res: NextApiResponse<IApiResponse<IPaginateResult<ITransaction>>>
 ) => {
-  let dbQuery: FilterQuery<{}> = {};
   try {
+    let dbQuery: FilterQuery<{}> = {};
     let { filterQuery, cursor, limit } = JSON.parse(req.body) as ITransactionsFilterQuery;
 
     const validQuery =
@@ -61,7 +61,7 @@ const handler: NextApiHandler = async (
       if (validQuery && filterQuery.filter) {
         dbQuery[filterQuery.filter] = { $regex: filterQuery.query, $options: 'i' };
       } else {
-        res.status(403).json({ error: 'wrong filterQuery parameter' });
+        res.status(400).json({ error: 'wrong filterQuery parameter' });
       }
     }
 
