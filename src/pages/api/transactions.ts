@@ -31,14 +31,13 @@ const handler: NextApiHandler = async (
     let dbQuery: FilterQuery<{}> = {};
     let { filterQuery, cursor, limit } = JSON.parse(req.body) as ITransactionsFilterQuery;
 
-    const validQuery =
-      filterQuery &&
-      Object.values(filterQuery).every((x) => typeof x === 'string') &&
-      filterQuery.query?.length &&
-      filterQuery.filter &&
-      filterIds.includes(filterQuery.filter);
-
     if (filterQuery) {
+      const validQuery =
+        filterQuery &&
+        Object.values(filterQuery).every((x) => typeof x === 'string') &&
+        filterQuery.query?.length &&
+        filterQuery.filter &&
+        filterIds.includes(filterQuery.filter);
       if (validQuery && filterQuery.filter) {
         try {
           const type = transactionModel.schema.path(filterQuery.filter).instance;
@@ -50,9 +49,10 @@ const handler: NextApiHandler = async (
             return res.status(400).json({ error: 'unsuported query type: ' + type });
           }
         } catch (error) {
+          const e = error as Error;
           return res
             .status(400)
-            .json({ error: 'Error while processing query parameter: ' + error.message });
+            .json({ error: 'Error while processing query parameter: ' + e.message });
         }
       } else {
         return res.status(400).json({ error: 'wrong filterQuery parameter' });
@@ -88,7 +88,8 @@ const handler: NextApiHandler = async (
     }
     res.status(200).json({ result });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const e = error as Error;
+    res.status(500).json({ error: e.message });
   }
 };
 
