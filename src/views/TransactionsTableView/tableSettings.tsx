@@ -14,6 +14,7 @@ export const header: IHeaderItem[] = [
 ];
 
 export function hashRender(value: CellItem): ReactNode {
+  if (!value) return '';
   return <a href={`//etherscan.io/tx/${value}`}>{value.toString()}</a>;
 }
 
@@ -31,11 +32,13 @@ export function dateRender(value: CellItem): string {
 }
 
 export function gasRender(value: CellItem): string {
+  if (!value) return '';
   let gasValue = hexStringToDecimal(value.toString());
   return (gasValue * 0.000000001).toString();
 }
 
 function valueRender(value: CellItem): string {
+  if (!value) return '';
   let weiValue = hexStringToDecimal(value.toString());
   return (weiValue * 10 ** -18).toString();
 }
