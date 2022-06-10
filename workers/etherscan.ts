@@ -6,32 +6,22 @@ import { fetchRecentBlock, fetchBlockByNumber } from '../api/ethScan';
 import { hexStringToDecimal, intToHex } from '../lib/utils';
 import { ITransaction, transactionModel } from '../models/Transaction';
 import { blockModel } from '../models/Block';
-import pino from 'pino';
-
-const projectDir = process.cwd();
-console.log(projectDir);
 import { loadEnvConfig } from '@next/env';
-loadEnvConfig(projectDir);
 
+if (process.env.NODE_ENV === 'development') {
+  const projectDir = process.cwd();
+  loadEnvConfig(projectDir);
+}
 import initMongoose from '../lib/mongodb';
-
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-    },
-  },
-});
 
 async function getDbRecentBlock(): Promise<number | null> {
   try {
     const resp = await blockModel.findOne().exec();
     if (!resp) return null;
-    logger.debug(resp.blockNumber, 'getDbRecentBlock');
+    console.log('getDbRecentBlock', resp.blockNumber);
     return resp.blockNumber;
   } catch (error) {
-    logger.error(error);
+    console.error('getDbRecentBlock', error);
     return null;
   }
 }
@@ -41,19 +31,19 @@ async function updateDbRecentBlock(blockNumber: number): Promise<number | null> 
     .findOneAndReplace(undefined, { blockNumber }, { returnDocument: 'after', upsert: true })
     .lean();
   if (!resp) throw new Error('cannot update BlockNumber');
-  logger.debug(resp, 'updateDbRecentBlock');
+  console.log('updateDbRecentBlock', resp);
   return resp.blockNumber;
 }
 
 async function updateDbTransactions(transactions: ITransaction[]): Promise<boolean> {
   const result = !!(await transactionModel.insertMany(transactions));
-  logger.info(result, 'updateDbTransactions');
+  console.log('updateDbTransactions', result);
   return result;
 }
 
 async function addNewTransactions(blockNumberHex: string): Promise<void> {
   try {
-    logger.info(blockNumberHex, 'addNewTransactions blockNumberHex');
+    console.log('addNewTransactions blockNumberHex', blockNumberHex);
     const blockNumber = hexStringToDecimal(blockNumberHex);
     const result = await fetchBlockByNumber(blockNumberHex);
     let timestamp = result.timestamp;
@@ -66,56 +56,74 @@ async function addNewTransactions(blockNumberHex: string): Promise<void> {
       });
       await updateDbTransactions(transactions);
     }
-    logger.info(transactions?.length, 'addNewTransactions success');
+    console.log('addNewTransactions success', transactions?.length);
   } catch (error) {
-    logger.error(error);
+    console.error('addNewTransactions', error);
   }
 }
-
-// function sleep(ms: number) {
-//   return new Promise<void>((resolve) => setTimeout(resolve, ms));
-// }
 
 async function updateRecentBlock(): Promise<number> {
   const blockHex = await fetchRecentBlock();
   const blockNumber = hexStringToDecimal(blockHex);
   await updateDbRecentBlock(blockNumber);
-  logger.info(blockNumber, 'updateDbRecentBlock');
+  console.log('updateDbRecentBlock', blockNumber);
   return blockNumber;
 }
 
-async function updateTransactionsRecent(): Promise<any> {
-  const dbBlockNumber = await getDbRecentBlock();
+async function updateTransactionsRecent(dbBlockNumber: number | null): Promise<any> {
   if (dbBlockNumber === null) {
-    await addNewTransactionsInit(1);
     return;
   }
   const blockNumberHex = await fetchRecentBlock();
   const blockNumber = hexStringToDecimal(blockNumberHex);
   updateDbRecentBlock(blockNumber);
   if (dbBlockNumber === blockNumber) {
-    logger.info('Recent block remains the same ' + blockNumber);
-    return;
+    console.log('Recent block remains the same ', blockNumber);
+    return blockNumber;
   }
-  addNewTransactions(blockNumberHex);
-}
-
-async function addNewTransactionsInit(limit: number = 10) {
-  logger.info('addNewTransactionsInit start');
-  const blockNumber = await updateRecentBlock();
-  for (let i = limit; i > 0; i--) {
-    const blockHex = intToHex(blockNumber - i);
+  for (let i = blockNumber - dbBlockNumber; i > 0; i++) {
+    const blockHex = intToHex(blockNumber + i);
     await addNewTransactions(blockHex);
   }
+  return blockNumber;
 }
 
-async function test() {
+async function addNewTransactionsInit(limit: number = 10): Promise<any> {
+  console.log('addNewTransactionsInit start');
+  // const dbBlockNumber = await getDbRecentBlock();
+  // if (dbBlockNumber !== null) {
+  //   console.log('addNewTransactionsInit skip');
+  // }
+  const blockNumber = await updateRecentBlock();
+  for (let i = limit; i > 0; i--) {
+    try {
+      const blockHex = intToHex(blockNumber - i);
+      await addNewTransactions(blockHex);
+    } catch (error) {
+      console.error('addNewTransactionsInit Error: ', error);
+    }
+  }
+  console.log('addNewTransactionsInit end');
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+async function main() {
   const db = await initMongoose();
-  await blockModel.deleteMany();
-  await transactionModel.deleteMany();
-  await updateTransactionsRecent();
+  // await blockModel.deleteMany();
+  // await transactionModel.deleteMany();
+  let blockNumber = await getDbRecentBlock();
+  if (blockNumber === null) {
+    await addNewTransactionsInit(1000);
+  }
+  while (true) {
+    sleep(1000);
+    blockNumber = await updateTransactionsRecent(blockNumber);
+  }
   db?.disconnect();
   process.exit(0);
 }
 
-test();
+main();
