@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import styles from '/styles/App.module.scss';
+import styles from 'styles/App.module.scss';
 import { TransactionsTableView } from 'views/TransactionsTableView';
 
 const Home: NextPage = () => {
