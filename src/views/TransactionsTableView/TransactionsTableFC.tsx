@@ -6,6 +6,8 @@ import { header } from './tableSettings';
 import type { ITransactionsFilterQuery } from 'pages/api/transactions';
 import type { IFilterQuery } from 'components/SearchFilter';
 import styles from './index.module.scss';
+import appStyles from 'styles/App.module.scss';
+
 export type CursorsInfo = ITransactionsFilterQuery['cursor'];
 
 export type CursorPagesInfo =
@@ -57,14 +59,12 @@ export const TransactionsTableFC = memo<TransactionsTableOpts>(
         </div>
       );
     }
-
     if (error) {
       const errorMessage = error?.info?.message || error.message;
-      return <div>{errorMessage}</div>;
+      return <h1 className={appStyles.error}>{errorMessage}</h1>;
     }
-    if (!data) return <div>something went wrong</div>;
-    if (!data.results.length) return <div>no results</div>;
-
+    if (!data) return <h1 className={appStyles.error}>Something went wrong</h1>;
+    if (!data.results.length) return <h1>No results</h1>;
     return <Table data={frame} header={header} options={{ key: 'hash' }} />;
   }
 );
