@@ -116,7 +116,7 @@ export const TransactionsTableView: React.FC = () => {
   }, [height]);
 
   return (
-    <div>
+    <div className={styles.container}>
       <div className={styles.containerSearch}>
         <SearchFilter options={filter} validateFn={validateSearch} onSearch={onSearch} />
       </div>
