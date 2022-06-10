@@ -11,9 +11,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "outDir": "out/workers",
-    "sourceMap": true
+    "sourceMap": true,
+    "outDir": "workers-build",
+    "baseUrl": "./src/",
+    "paths": {
+      "@/*": ["/*"]
+    }
   },
-  "include": ["./workers/*.ts"],
+  "include": ["./src/workers/*.ts"],
   "exclude": ["node_modules"]
 }
