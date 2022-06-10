@@ -46,7 +46,7 @@ export const TransactionsTableView: React.FC = () => {
   function validateSearch(value: string, filter?: string): boolean {
     if (filter) {
       if (filter === 'blockNumber') {
-        return value.length > 2;
+        return value.length > 2 && /^\d+$/.test(value.trim());
       }
     }
     return value.startsWith('0x') && value.length > 2;
