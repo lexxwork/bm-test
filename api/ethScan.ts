@@ -1,4 +1,4 @@
-import { fetcher } from 'lib/fetcher';
+import { fetcher, ResponseError } from 'lib/fetcher';
 import { getUrlWithParams } from 'lib/utils';
 
 type Params = { [key: string]: string | number | boolean };
@@ -12,29 +12,44 @@ function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
-interface IEtherScanApiResp {
-  result: object;
+interface IEtherScanApiResp<T> {
+  result: T;
 }
 
-type IEtherScanApiResult = IEtherScanApiResp['result'];
+interface IResultObj {
+  [key: string]: any;
+}
+
+type IEtherScanApiResult<T> = IEtherScanApiResp<T>['result'];
 
 async function slowFetcher<T>(...args: Parameters<typeof fetcher>): Promise<T> {
-  await sleep(300);
-  return fetcher<T>(...args);
+  let tries = 15;
+  while (tries-- > 0) {
+    try {
+      await sleep(300);
+      return fetcher<T>(...args);
+    } catch (error) {
+      const e = error as ResponseError;
+      console.warn('Fetch Error: ', e.message || 'Unknown Error');
+    }
+  }
+  throw Error('Cannot fetch data');
 }
 
-export async function fetchRecentBlock(): Promise<IEtherScanApiResult> {
+export async function fetchRecentBlock(): Promise<IEtherScanApiResult<string>> {
   const params = {
     ...defaultParams,
     module: 'proxy',
     action: 'eth_blockNumber',
   };
   const url = getUrlWithParams(apiBaseUrl, params);
-  const resp = await slowFetcher<IEtherScanApiResp>(url);
+  const resp = await slowFetcher<IEtherScanApiResp<string>>(url);
   return resp.result;
 }
 
-export async function fetchBlockByNumber(blockNumber: string): Promise<IEtherScanApiResult> {
+export async function fetchBlockByNumber(
+  blockNumber: string
+): Promise<IEtherScanApiResult<IResultObj>> {
   const params = {
     ...defaultParams,
     module: 'proxy',
@@ -43,11 +58,13 @@ export async function fetchBlockByNumber(blockNumber: string): Promise<IEtherSca
     boolean: true,
   };
   const url = getUrlWithParams(apiBaseUrl, params);
-  const resp = await slowFetcher<IEtherScanApiResp>(url);
+  const resp = await slowFetcher<IEtherScanApiResp<IResultObj>>(url);
   return resp.result;
 }
 
-export async function fetchTransactionByHash(hash: string): Promise<IEtherScanApiResult> {
+export async function fetchTransactionByHash(
+  hash: string
+): Promise<IEtherScanApiResult<IResultObj>> {
   const params = {
     ...defaultParams,
     module: 'proxy',
@@ -55,6 +72,6 @@ export async function fetchTransactionByHash(hash: string): Promise<IEtherScanAp
     txhash: hash,
   };
   const url = getUrlWithParams(apiBaseUrl, params);
-  const resp = await slowFetcher<IEtherScanApiResp>(url);
+  const resp = await slowFetcher<IEtherScanApiResp<IResultObj>>(url);
   return resp.result;
 }
