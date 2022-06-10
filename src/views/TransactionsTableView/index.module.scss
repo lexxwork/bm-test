@@ -1,21 +1,31 @@
 .container {
 }
+
 .containerSearch {
   margin-bottom: 16px;
 }
 
+.transactionsTableContainer {
+  min-height: 620px;
+  // overflow-x: auto;
+}
+
 .containerPagination {
-  margin-top: 70px;
+  margin-top: 24px;
   display: flex;
   justify-content: center;
 }
 
 @media (max-height: 640px) {
+  .transactionsTableContainer {
+    min-height: auto;
+  }
   .containerSearch {
     margin-bottom: 8px;
   }
 
   .containerPagination {
-    margin-top: 20px;
+    margin-top: 10px;
   }
+
 }
