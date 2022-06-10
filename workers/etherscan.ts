@@ -2,7 +2,7 @@ import nodeFetch from 'isomorphic-fetch';
 
 global.fetch = nodeFetch;
 
-import { fetchRecentBlock, fetchBlockByNumber } from '../api/ethScan';
+import { fetchRecentBlock, fetchBlockByNumber } from '../api/etherScan';
 import { hexStringToDecimal, intToHex } from '../lib/utils';
 import { ITransaction, transactionModel } from '../models/Transaction';
 import { blockModel } from '../models/Block';
