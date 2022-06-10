@@ -26,10 +26,7 @@
 
 .pageContainer {
   display: flex;
-  // flex-direction: column;
-  // justify-content: center;
-  // align-items: center;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
   flex: 1;
 }
@@ -38,7 +35,7 @@
   width: 100%;
   flex: 1;
   padding: 60px 130px 48px 130px;
-  overflow-x: auto;
+  // overflow-x: auto;
 }
 
 .footer {
