@@ -1,3 +1,5 @@
+// @import url('/src/styles/vars.scss');
+
 .container {
   overflow-x: auto;
 }
@@ -11,7 +13,7 @@
 
   td,
   th {
-    border: 1px solid #ffffff;
+    border: 1px solid var(--white-color);
     padding: 8px;
     vertical-align: middle;
     text-overflow: ellipsis;
@@ -32,7 +34,7 @@
   }
 
   tr:nth-child(even) {
-    background-color: #f1f1f1;
+    background-color: var(--white-grayed-color);
   }
 
   // tr:hover {
@@ -43,10 +45,10 @@
     font-size: 14px;
     line-height: 17px;
     text-align: start;
-    color: #1a1a1a;
+    color: var(--control-text-color);
 
     a {
-      color: #3a80ba;
+      color: var(--controls-color);
       text-decoration-line: underline;
     }
   }
@@ -55,8 +57,8 @@
     height: 48px;
     padding: 4px 12px;
     text-align: left;
-    background-color: #3a80ba;
-    color: white;
+    background-color: var(--controls-color);
+    color: var(--white-color);
     font-size: 1rem;
     line-height: 20px;
   }

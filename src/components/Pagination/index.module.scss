@@ -1,3 +1,5 @@
+// @import url('/src/styles/vars.scss');
+
 .container {
   width: 100%;
   display: inline-flex;
@@ -20,10 +22,10 @@
     margin-right: 4px;
 
     &.pageIndex {
-      background-color: #ffffff;
-      color: #1a1a1a;
+      background-color: var(--white-color);
+      color: var(--control-text-color);
       padding: 14px;
-      border: 2px solid #f1f1f1;
+      border: 2px solid var(--white-grayed-color);
       border-radius: 8px;
       font-style: normal;
       font-weight: 400;
@@ -31,12 +33,12 @@
       line-height: 20px;
 
       &:hover {
-        background-color: #f1f1f1;
+        background-color: var(--white-grayed-color);
       }
 
       &.active {
-        background-color: #3a80ba;
-        color: #ffffff;
+        background-color: var(--controls-color);
+        color: var(--white-color);
         &:hover {
           opacity: 0.7;
         }
@@ -45,12 +47,12 @@
 
     &.pageNextPrev {
       font-size: 30px;
-      background-color: #ffffff;
-      color: #3a80ba;
+      background-color: var(--white-color);
+      color: var(--controls-color);
       padding-top: 1px;
 
       &.disabled {
-        color: #f1f1f1;
+        color: var(--white-grayed-color);
       }
       &:hover {
         opacity: 0.7;
