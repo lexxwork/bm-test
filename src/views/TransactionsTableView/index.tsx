@@ -29,7 +29,6 @@ const windowMinHeight = 640;
 const pagesMax = 5;
 const rowsLimitMax = 15;
 const rowsLimitMin = 10;
-const fetchLimit = pagesMax * rowsLimitMax;
 
 export const TransactionsTableView: React.FC = () => {
   const [rowsLimit, setRowsLimit] = useState(rowsLimitMax);
@@ -116,18 +115,20 @@ export const TransactionsTableView: React.FC = () => {
   }, [height]);
 
   return (
-    <div className={styles.container}>
+    <div >
       <div className={styles.containerSearch}>
         <SearchFilter options={filter} validateFn={validateSearch} onSearch={onSearch} />
       </div>
-      <TransactionsTableFC
-        rowsLimit={rowsLimit}
-        filterQuery={filterQuery}
-        statesCallback={onNextCursorCb}
-        cursor={activeCursor}
-        limit={fetchLimit}
-        frameNumber={currentPage}
-      />
+      <div className={styles.transactionsTableContainer}>
+        <TransactionsTableFC
+          rowsLimit={rowsLimit}
+          filterQuery={filterQuery}
+          statesCallback={onNextCursorCb}
+          cursor={activeCursor}
+          limit={pagesMax * rowsLimit}
+          frameNumber={currentPage}
+        />
+      </div>
       <div className={styles.containerPagination}>
         <Pagination
           pages={pages}
