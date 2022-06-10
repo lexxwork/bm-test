@@ -1,10 +1,11 @@
 import { memo, useEffect, useRef } from 'react';
 import useGetTransactions from 'use/useGetTransactions';
 import { ITableRowItem, Table } from 'components/Table';
+import { Loader } from 'components/Loader';
 import { header } from './tableSettings';
 import type { ITransactionsFilterQuery } from 'pages/api/transactions';
 import type { IFilterQuery } from 'components/SearchFilter';
-
+import styles from './index.module.scss';
 export type CursorsInfo = ITransactionsFilterQuery['cursor'];
 
 export type CursorPagesInfo =
@@ -49,7 +50,14 @@ export const TransactionsTableFC = memo<TransactionsTableOpts>(
       statesCallback({ cursors, pagesCount });
     }, [cursors, pagesCount, statesCallback]);
 
-    if (isLoading) return <div>loading</div>;
+    if (isLoading) {
+      return (
+        <div className={styles.loaderContainer}>
+          <Loader />
+        </div>
+      );
+    }
+
     if (error) {
       const errorMessage = error?.info?.message || error.message;
       return <div>{errorMessage}</div>;
