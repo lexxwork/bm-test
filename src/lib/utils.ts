@@ -11,7 +11,7 @@ export function hexStringToDecimal(oxHex: string): number {
 }
 
 export function intToHex(integer: number): string {
-  return Number(integer).toString(16);
+  return '0x' + Number(integer).toString(16);
 }
 
 type Params = { [key: string]: string | number | boolean };
