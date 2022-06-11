@@ -7,7 +7,7 @@ export const header: IHeaderItem[] = [
   { colId: 'hash', title: 'Transaction ID', renderFn: hashRender },
   { colId: 'from', title: 'Sender address' },
   { colId: 'to', title: 'Recipient address' },
-  { colId: 'blocks', title: 'Block confirmations' },
+  { colId: 'blocks', title: 'Block confirmations', options: { width: 150 } },
   { colId: 'timestamp', title: 'Date', renderFn: dateRender, options: { width: 120 } },
   { colId: 'value', title: 'Value', renderFn: valueRender },
   { colId: 'gas', title: 'Transaction Fee', renderFn: gasRender },
@@ -40,5 +40,6 @@ export function gasRender(value: CellItem): string {
 function valueRender(value: CellItem): string {
   if (!value) return '';
   let weiValue = hexStringToDecimal(value.toString());
-  return (weiValue * 10 ** -18).toString();
+  if(weiValue === 0) return '0';
+  return (weiValue * 10 ** -18).toFixed(18);
 }
