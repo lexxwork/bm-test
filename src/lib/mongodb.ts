@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === 'development') {
 function getClientFn() {
   return clientPromise.then(
     (client: Mongoose) => {
-      console.log('Mongoose init called');
+      console.log('Mongoose loaded');
       return client;
     },
     (err) => {
@@ -46,7 +46,6 @@ export default async function initMongoose(): Promise<MongooseOrNull> {
   if (process.env.NODE_ENV === 'development') {
     if (!global._mongooseClient) {
       global._mongooseClient = await getClientFn();
-      console.log('initMongoose');
     }
     clientMongoose = global._mongooseClient;
   } else {
