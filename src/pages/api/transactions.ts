@@ -9,9 +9,6 @@ import type { IPaginateResult, ITransaction } from 'models/Transaction';
 import type { IFilterQuery } from 'components/SearchFilter';
 
 export interface ITransactionsFilterQuery {
-  // filterQuery?: IFilterQuery & {
-  //   filter: keyof ITransaction;
-  // };
   filterQuery?: IFilterQuery;
   cursor?: { previous?: string; next?: string };
   limit?: number;
@@ -38,13 +35,15 @@ const handler: NextApiHandler = async (
         filterQuery.query?.length &&
         filterQuery.filter &&
         filterIds.includes(filterQuery.filter);
+
       if (validQuery && filterQuery.filter) {
         try {
           const type = transactionModel.schema.path(filterQuery.filter).instance;
-          if (type === 'String') {
-            dbQuery[filterQuery.filter] = { $regex: filterQuery.query, $options: 'i' };
-          } else if (type === 'Number') {
+          if (type === 'Number') {
             dbQuery[filterQuery.filter] = Number(filterQuery.query);
+          } else if (type === 'String') {
+            dbQuery[filterQuery.filter] = filterQuery.query;
+            // dbQuery[filterQuery.filter] = { $regex: filterQuery.query, $options: 'i' };
           } else {
             return res.status(400).json({ error: 'unsuported query type: ' + type });
           }
@@ -59,30 +58,20 @@ const handler: NextApiHandler = async (
       }
     }
 
-    // if (!cursor || !Object.keys(cursor).length) {
-    //   cursor = undefined;
-    // }
-
     limit = limit && !isNaN(limit) && limit > 0 && limit < limitMax ? limit : limitMax;
-
-    // const pQuery = paginateQuery(dbQuery, cursor);
-    // console.log({ pQuery });
 
     await initMongoose();
 
-    // const result = await transactionModel.find(pQuery, null, { limit }).lean();
     const result = await transactionModel.paginate({
       query: dbQuery,
+      limit,
       ...cursor,
-      /* fields: { id_: 0 }, paginatedField: '_id', */ limit,
     });
     if (result?.results?.length) {
       const resp = await blockModel.findOne().lean();
-      if (resp) {
-        // const blockNumberHex = intToHex(resp.blockNumber);
-        const blockNumber = resp.blockNumber;
+      if (resp && resp.blockNumber) {
         result.results.forEach((item: ITransaction) => {
-          item.blocks = blockNumber - item.blockNumber;
+          item.blocks = resp.blockNumber - item.blockNumber;
         });
       }
     }
