@@ -4,8 +4,10 @@ import { getUrlWithParams } from '../src/lib/utils';
 type Params = { [key: string]: string | number | boolean };
 
 const apiBaseUrl = 'https://api.etherscan.io/api';
-const apiKey = 'NBI9SGSW6P1NZQGYT8BD8DDN5UQ7AIM4E9';
-
+if (!process.env.ETHERSCAN_API) {
+  throw new Error('Please add your EtherScna API key to ETHERSCAN_API in .env.local');
+}
+const apiKey = process.env.ETHERSCAN_API;
 const defaultParams: Params = { apikey: apiKey };
 
 function sleep(ms: number) {
@@ -31,6 +33,7 @@ async function slowFetcher<T>(...args: Parameters<typeof fetcher>): Promise<T> {
     } catch (error) {
       const e = error as Error;
       console.warn('Fetch Error: ', e.message || 'Unknown Error');
+      await sleep(1000);
     }
   }
   throw Error('Cannot fetch data');
@@ -58,8 +61,16 @@ export async function fetchBlockByNumber(
     boolean: true,
   };
   const url = getUrlWithParams(apiBaseUrl, params);
-  const resp = await slowFetcher<IEtherScanApiResp<IResultObj>>(url);
-  return resp.result;
+  let tries = 15;
+  while (tries-- > 0) {
+    const resp = await slowFetcher<IEtherScanApiResp<IResultObj>>(url);
+    // return resp.result
+    if (resp.result) {
+      return resp.result;
+    }
+    sleep(5000);
+  }
+  throw new Error('fetchBlockByNumber result is null');
 }
 
 export async function fetchTransactionByHash(

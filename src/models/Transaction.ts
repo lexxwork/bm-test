@@ -45,7 +45,7 @@ export interface ITransaction {
   timestamp?: number;
   blocks?: number;
   nonce: string;
-  to: string;
+  to: string | null;
   transactionIndex: string;
   value: string;
   type: string;
@@ -56,16 +56,16 @@ export interface ITransaction {
 
 export const transactionSchema = new Schema<ITransaction>(
   {
+    blockNumber: { type: Number, required: true, index: true },
+    hash: { type: String, required: true, index: true },
+    from: { type: String, required: true, index: true },
+    to: { type: String, required: false, default: null, index: true },
     blockHash: { type: String, required: true },
-    blockNumber: { type: Number, required: true },
-    from: { type: String, required: true },
     gas: { type: String, required: true },
     gasPrice: { type: String, required: true },
-    hash: { type: String, required: true },
     input: { type: String, required: false },
     nonce: { type: String, required: false },
     timestamp: { type: Number, required: false },
-    to: { type: String, required: true },
     transactionIndex: { type: String, required: false },
     value: { type: String, required: true },
     type: { type: String, required: true },
@@ -78,6 +78,8 @@ export const transactionSchema = new Schema<ITransaction>(
 
 transactionSchema.plugin(MongoPaging.mongoosePlugin);
 
-export const transactionModel = (mongoose.models[collectionName]
-  ? mongoose.models[collectionName]
-  : model<ITransaction>(collectionName, transactionSchema)) as IPaginateModel<DocumentType<ITransaction>> & ITransaction;
+export const transactionModel = (
+  mongoose.models[collectionName]
+    ? mongoose.models[collectionName]
+    : model<ITransaction>(collectionName, transactionSchema)
+) as IPaginateModel<DocumentType<ITransaction>> & ITransaction;

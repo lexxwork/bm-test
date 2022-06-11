@@ -11,10 +11,11 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/workers/test-paginate.ts",
+      "program": "${workspaceFolder}/src/workers/etherscan.ts",
       "preLaunchTask": "tsc: build - tsconfig.worker.json",
+      "envFile": "${workspaceFolder}/.env.local",
       "outFiles": [
-        "${workspaceFolder}/out/workers/**/*.js"
+        "${workspaceFolder}/workers-build/**/*.js"
       ]
     },
     {

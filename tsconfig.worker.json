@@ -13,11 +13,12 @@
     "incremental": true,
     "sourceMap": true,
     "outDir": "workers-build",
-    "baseUrl": "./src/",
+    "baseUrl": "./src/workers/",
     "paths": {
-      "@/*": ["/*"]
+      "lib/*": ["./src/lib/*.ts"],
+      "models/*": ["./src/models/*.ts"]
     }
   },
-  "include": ["./src/workers/*.ts"],
+  "include": ["./src/workers/**/*.ts"],
   "exclude": ["node_modules"]
 }
