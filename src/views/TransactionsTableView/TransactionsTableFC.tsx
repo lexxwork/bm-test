@@ -18,7 +18,6 @@ export type CursorPagesInfo =
   | undefined;
 
 export type TransactionsTableOpts = ITransactionsFilterQuery & {
-  // cursor: ITransactionsFilterQuery['cursor'];
   filterQuery: IFilterQuery | undefined;
   frameNumber: number;
   rowsLimit: number;
@@ -55,7 +54,9 @@ export const TransactionsTableFC = memo<TransactionsTableOpts>(
     if (isLoading) {
       return (
         <div className={styles.loaderContainer}>
-          <Loader />
+          <div className={styles.loaderWrap}>
+            <Loader />
+          </div>
         </div>
       );
     }

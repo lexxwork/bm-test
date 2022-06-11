@@ -7,15 +7,20 @@
 
 .transactionsTableContainer {
   min-height: 620px;
-  position: relative;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.loaderContainer {
   display: flex;
   flex-flow: column nowrap;
   align-content: center;
   justify-content: center;
   align-items: center;
+  flex: 1;
 }
 
-.loaderContainer {
+.loaderWrap {
   width: 80px;
   height: 80px;
   align-self: center;
