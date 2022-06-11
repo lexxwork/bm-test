@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import styles from './index.module.scss';
 
 type PageId = number;
@@ -14,17 +15,37 @@ export type CursorInfo = {
 };
 
 export interface IPageProps {
-  pages: IPage[];
   currentPage: PageId;
   cursorsInfo: CursorInfo;
+  pagesCount: number;
+  pagesOffset: number;
   clickPageIndex: (page: PageId) => void;
   clickPageNext: (page: PageId) => void;
   clickPagePrev: (page: PageId) => void;
 }
 
+function pagesGen(pagesLength: number, offset: number): IPage[] {
+  return Array.from(Array(pagesLength), (_, x) => ({ value: offset + x + 1, id: x }));
+}
+
 export const Pagination: React.FC<IPageProps> = (options: IPageProps) => {
-  const { pages, clickPageIndex, clickPageNext, clickPagePrev, currentPage, cursorsInfo } = options;
-  // const pages
+  const {
+    // pages,
+    clickPageIndex,
+    clickPageNext,
+    clickPagePrev,
+    currentPage,
+    cursorsInfo,
+    pagesCount = 0,
+    pagesOffset = 0,
+  } = options;
+
+  const [pages, setPages] = useState<IPage[]>(pagesGen(pagesCount, pagesOffset));
+
+  useEffect(() => {
+    setPages(pagesGen(pagesCount, pagesOffset));
+  }, [pagesCount, pagesOffset]);
+
   return (
     <nav className={styles.container}>
       <a

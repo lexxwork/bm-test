@@ -21,9 +21,6 @@ const filter: IOptionTransaction[] = [
 
 export const filterIds: string[] = filter.map((x) => x.value);
 
-function pagesGen(pagesLength: number, offset: number): IPage[] {
-  return Array.from(Array(pagesLength), (_, x) => ({ value: offset + x + 1, id: x }));
-}
 
 const windowMinHeight = 640;
 const pagesMax = 5;
@@ -33,8 +30,7 @@ const rowsLimitMin = 10;
 export const TransactionsTableView: React.FC = () => {
   const [rowsLimit, setRowsLimit] = useState(rowsLimitMax);
   const [pagesOffset, setPagesOffset] = useState(0);
-  const [pagesLength, setPagesLength] = useState(pagesMax);
-  const [pages, setPages] = useState<IPage[]>(pagesGen(pagesLength, pagesOffset));
+  const [pagesCount, setPagesCount] = useState(pagesMax);
   const [currentPage, setCurrentPage] = useState<IPage['id']>(0);
   const [cursorsInfo, setCursorsInfo] = useState<CursorPagesInfo>({
     hasNext: false,
@@ -55,15 +51,14 @@ export const TransactionsTableView: React.FC = () => {
   const onNextCursorCb = useCallback(
     ({ cursors, pagesCount }: { cursors: CursorPagesInfo; pagesCount: number }) => {
       setCursorsInfo(cursors);
-      setPagesLength(pagesCount);
-      setPages(pagesGen(pagesCount, pagesOffset));
+      setPagesCount(pagesCount);
     },
-    [pagesOffset]
+    []
   );
 
   const onclickPrev = useCallback(
     (currentPage: IPage['id']) => {
-      if (pages[currentPage]?.value === 0 || (currentPage === 0 && !cursorsInfo?.hasPrevious)) {
+      if (currentPage + pagesOffset  === 0 || (currentPage === 0 && !cursorsInfo?.hasPrevious)) {
         return;
       }
       if (currentPage > 0) {
@@ -74,12 +69,12 @@ export const TransactionsTableView: React.FC = () => {
       setCurrentPage(pagesMax - 1);
       setActiveCursor({ previous: cursorsInfo?.previous });
     },
-    [cursorsInfo, pages]
+    [cursorsInfo, pagesOffset]
   );
 
   const onclickNext = useCallback(
     (currentPage: IPage['id']) => {
-      if (currentPage < pages.length - 1) {
+      if (currentPage < pagesCount - 1) {
         setCurrentPage((state) => state + 1);
         return;
       }
@@ -90,12 +85,12 @@ export const TransactionsTableView: React.FC = () => {
       setCurrentPage(0);
       setActiveCursor({ next: cursorsInfo.next });
     },
-    [cursorsInfo, pages.length]
+    [cursorsInfo, pagesCount]
   );
 
   const onSearch = useCallback((filterQuery: IFilterQuery) => {
     setFilterQuery(filterQuery);
-    setPagesLength(0);
+    setPagesCount(0);
     setPagesOffset(0);
     setCurrentPage(0);
     setActiveCursor(undefined);
@@ -131,11 +126,12 @@ export const TransactionsTableView: React.FC = () => {
       </div>
       <div className={styles.containerPagination}>
         <Pagination
-          pages={pages}
           cursorsInfo={{
             hasNext: cursorsInfo?.hasNext ?? false,
             hasPrevious: cursorsInfo?.hasPrevious ?? false,
           }}
+          pagesCount={pagesCount}
+          pagesOffset={pagesOffset}
           currentPage={currentPage}
           clickPageIndex={setCurrentPage}
           clickPagePrev={onclickPrev}
