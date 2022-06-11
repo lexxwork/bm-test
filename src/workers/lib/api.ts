@@ -1,5 +1,5 @@
-import { fetcher, ResponseError } from 'lib/fetcher';
-import { getUrlWithParams } from 'lib/utils';
+import { fetcher } from './node-fetcher';
+import { getUrlWithParams } from '../src/lib/utils';
 
 type Params = { [key: string]: string | number | boolean };
 
@@ -27,9 +27,9 @@ async function slowFetcher<T>(...args: Parameters<typeof fetcher>): Promise<T> {
   while (tries-- > 0) {
     try {
       await sleep(300);
-      return fetcher<T>(...args);
+      return fetcher(...args);
     } catch (error) {
-      const e = error as ResponseError;
+      const e = error as Error;
       console.warn('Fetch Error: ', e.message || 'Unknown Error');
     }
   }
