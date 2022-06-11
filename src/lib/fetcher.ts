@@ -1,5 +1,3 @@
-import type { IApiResponse } from 'pages/api/transactions';
-
 export class ResponseError extends Error {
   constructor(message: any) {
     super(message);
@@ -23,11 +21,11 @@ export function fetcher<T>(requestInfo: RequestInfo, ...args: any[]): Promise<T>
 export function get<T>(
   path: string,
   args: RequestInit = { method: 'get' }
-): Promise<IApiResponse<T>> {
+): Promise<T> {
   return fetcher(new Request(path, args));
 }
 
-export function post<T>(path: string, body: any): Promise<IApiResponse<T>> {
+export function post<T>(path: string, body: any): Promise<T> {
   const args: RequestInit = { method: 'post', body: JSON.stringify(body) };
   return fetcher(new Request(path, args));
 }

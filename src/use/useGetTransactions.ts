@@ -1,6 +1,7 @@
 import useSWR, { Fetcher } from 'swr';
 import { post } from 'lib/fetcher';
-import type { IFilterQuery } from 'components/SearchFilter';
+// import type { IFilterQuery } from 'components/SearchFilter';
+import type { IApiResponse } from 'pages/api/transactions';
 import type { ITransactionsFilterQuery } from 'pages/api/transactions';
 import { ResponseError } from 'lib/fetcher';
 
@@ -25,7 +26,7 @@ export type UseTransactionsResp = SWRResponse<IPaginateResult<ITransaction>>;
 export default function useGetTransactions(args: ITransactionsFilterQuery): UseTransactionsResp {
   const { data, error } = useSWR(
     args,
-    (options) => post<IPaginateResult<ITransaction>>('/api/transactions', options),
+    (options) => post<IApiResponse<IPaginateResult<ITransaction>>>('/api/transactions', options),
     { revalidateOnFocus: false }
   );
   return {
