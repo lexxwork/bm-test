@@ -1,9 +1,9 @@
-import type { NextApiRequest, NextApiResponse, NextApiHandler } from 'next';
 import initMongoose from 'lib/mongodb';
 import { transactionModel } from 'models/Transaction';
 import { filterIds } from 'views/TransactionsTableView';
 import { blockModel } from 'models/Block';
-
+import type { NextApiRequest, NextApiResponse, NextApiHandler } from 'next';
+import type { IApiResponse } from 'types/api';
 import type { FilterQuery } from 'mongoose';
 import type { IPaginateResult, ITransaction } from 'models/Transaction';
 import type { IFilterQuery } from 'components/SearchFilter';
@@ -12,10 +12,6 @@ export interface ITransactionsFilterQuery {
   filterQuery?: IFilterQuery;
   cursor?: { previous?: string; next?: string };
   limit?: number;
-}
-export interface IApiResponse<T> {
-  result?: T;
-  error?: string;
 }
 
 const limitMax = 100;
