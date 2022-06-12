@@ -3,7 +3,7 @@ import mongoose, { Model, model, Schema } from 'mongoose';
 const collectionName = 'block';
 
 export interface IBlock {
-  blockNumber: number; //convert
+  blockNumber: number; 
 }
 
 export const schema = new Schema<IBlock>(
