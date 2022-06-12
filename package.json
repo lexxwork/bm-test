@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "lint": "next lint",
     "workers-build": "rm -rf workers-build && tsc --project tsconfig.worker.json",
-    "etherscan": "cd workers-build/ && node etherscan.js"
+    "etherscan": "cd workers-build/ && node etherscan.js",
+    "heroku-postbuild": "npm run workers-build"
   },
   "dependencies": {
     "mongo-cursor-pagination": "^7.6.1",
@@ -35,5 +36,7 @@
     "sass": "^1.52.1",
     "typescript": "4.7.2"
   },
-  "cacheDirectories": [".next/cache"]
+  "cacheDirectories": [
+    ".next/cache"
+  ]
 }
