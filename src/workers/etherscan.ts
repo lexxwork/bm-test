@@ -2,15 +2,23 @@ import { fetchRecentBlock, fetchBlockByNumber, fetchTransactionByHash } from './
 import { hexStringToDecimal, intToHex } from './src/lib/utils';
 import { ITransaction, transactionModel } from './src/models/Transaction';
 import { blockModel } from './src/models/Block';
-import { hashesModel } from './src/models/Hashes';
+import { hashesModel, IHash } from './src/models/Hashes';
 import { loadEnvConfig } from '@next/env';
 import path from 'path';
+import initMongoose from './src/lib/mongodb';
+
+import type { Schema } from 'mongoose';
 
 if (process.env.NODE_ENV !== 'production') {
   const rootDir = path.join(process.cwd(), '../');
   loadEnvConfig(rootDir);
 }
-import initMongoose from './src/lib/mongodb';
+
+type ObjectId = Schema.Types.ObjectId;
+
+function isTransactionCompleted(record: ITransaction) {
+  return ['to'].every((key) => record[key] !== null);
+}
 
 async function getDbRecentBlock(): Promise<number | null> {
   try {
@@ -47,19 +55,26 @@ async function insertDbTransactions(transactions: ITransaction[]): Promise<boole
   }
 }
 
-async function updateDbHashes(hashes: string[]): Promise<void> {
+async function insertDbHashes(hashes: string[]): Promise<void> {
   await hashesModel.insertMany(hashes.map((x) => ({ hash: x })));
   return;
 }
 
-async function getDbHashes(limit: number = 10): Promise<string[]> {
-  const result = await hashesModel.find().limit(limit).lean();
-  if (!result) return [];
-  return result.map((x) => x.hash);
+async function getDbHashes(limit: number = 10): Promise<IHash[]> {
+  const result = await hashesModel
+    .find({ lastCheck: { $lte: Date.now() - 60 * 1000 } })
+    .limit(limit)
+    .lean();
+  return result;
 }
 
-async function removeDbHashes(hashes: string[]): Promise<boolean> {
-  const result = await hashesModel.deleteMany({ hash: hashes });
+async function updateDbHashes(ids: ObjectId[]): Promise<boolean> {
+  const result = await hashesModel.updateMany({ _id: ids }, { lastCheck: Date.now() });
+  return !!result;
+}
+
+async function removeDbHashes(ids: ObjectId[]): Promise<boolean> {
+  const result = await hashesModel.deleteMany({ _id: ids });
   return !!result;
 }
 
@@ -73,26 +88,33 @@ async function processHashes() {
   if (!hashes.length) {
     return;
   }
-  const results: Promise<{ result: boolean; hash: string }>[] = [];
+  const updates: Promise<{ result: boolean; id: ObjectId }>[] = [];
+  const rest: ObjectId[] = [];
   console.log('processHashes ', hashes.length);
 
-  for (const hash of hashes) {
-    const transaction = (await fetchTransactionByHash(hash)) as ITransaction;
-    if (transaction) {
-      const promise = updateDbTransaction(hash, transaction)
-        .then((result) => ({ result, hash }))
+  for (const item of hashes) {
+    const transaction = (await fetchTransactionByHash(item.hash)) as ITransaction;
+    if (transaction && isTransactionCompleted(transaction)) {
+      const promise = updateDbTransaction(item.hash, transaction)
+        .then((result) => ({ result, id: item._id }))
         .catch(() => ({
           result: false,
-          hash,
+          id: item._id,
         }));
-      results.push(promise);
+      updates.push(promise);
+    } else {
+      rest.push(item._id);
     }
   }
-  const resolved = await Promise.all(results);
-  const updatedHashes = resolved.filter((x) => x.result).map((x) => x.hash);
-  if (updatedHashes.length) {
-    console.log('processHashes updated ', updatedHashes.length);
-    await removeDbHashes(updatedHashes);
+  const resolved = await Promise.all(updates);
+  const updated = resolved.filter((x) => x.result).map((x) => x.id);
+  if (updated.length) {
+    console.log('processHashes removed ', updated.length);
+    removeDbHashes(updated);
+  }
+  if (rest.length) {
+    console.log('processHashes updated ', rest.length);
+    updateDbHashes(rest);
   }
 }
 
@@ -105,9 +127,11 @@ async function addNewTransactions(blockNumber: number): Promise<boolean> {
     if (timestamp) timestamp = hexStringToDecimal(timestamp);
     const transactions = result.transactions as ITransaction[];
     if (transactions && transactions.length) {
-      const partial = transactions.filter((x) => !x.to).map((x) => x.hash);
-      if (partial.length) {
-        updateDbHashes(partial);
+      const uncompleted = transactions
+        .filter((item) => !isTransactionCompleted(item))
+        .map((item) => item.hash);
+      if (uncompleted.length) {
+        insertDbHashes(uncompleted);
       }
       transactions.forEach((item) => {
         item.blockNumber = blockNumber;
@@ -198,12 +222,12 @@ async function main() {
   }
   let blockNumber = await getDbRecentBlock();
   if (blockNumber === null) {
-    const limit = process.env.NODE_ENV !== 'production' ? 10 : 1000
+    const limit = process.env.NODE_ENV !== 'production' ? 10 : 1000;
     blockNumber = await addNewTransactionsInit(limit);
   }
   while (true) {
     await processHashes();
-    sleep(1000);
+    sleep(5000);
     blockNumber = await updateTransactionsRecent(blockNumber);
   }
   db?.disconnect();
