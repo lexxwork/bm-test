@@ -8,9 +8,9 @@ if (!process.env.MONGODB_URI) {
 const uri: string = process.env.MONGODB_URI;
 const options: ConnectOptions = {};
 
-if (process.env.NODE_ENV === 'production') {
-  options.autoIndex = false; //TODO autoindex manually
-}
+// if (process.env.NODE_ENV === 'production') {
+//   options.autoIndex = false; //TODO autoindex manually
+// }
 
 type MongooseOrNull = Mongoose | null;
 let clientMongoose: MongooseOrNull;
