@@ -267,4 +267,4 @@ async function main() {
   }
 }
 
-throng({ worker: main, count: 1 });
+throng({ start: main, count: 1, lifetime: Infinity });
