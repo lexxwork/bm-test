@@ -6,6 +6,7 @@ import { hashesModel, IHash } from './src/models/Hashes';
 import { loadEnvConfig } from '@next/env';
 import path from 'path';
 import initMongoose from './src/lib/mongodb';
+const throng = require('throng');
 
 import type { Schema } from 'mongoose';
 
@@ -84,7 +85,10 @@ async function updateDbTransaction(hash: string, data: ITransaction): Promise<bo
 }
 
 async function processHashes() {
-  const hashes = await getDbHashes(10);
+  interface IHashWithId extends IHash {
+    _id: ObjectId;
+  }
+  const hashes = (await getDbHashes(10)) as IHashWithId[];
   if (!hashes.length) {
     return;
   }
@@ -158,20 +162,23 @@ async function updateRecentBlock(): Promise<number> {
   return blockNumber;
 }
 
-async function updateTransactionsRecent(storedBlock: number): Promise<any> {
+async function updateTransactionsRecent(storedBlock: number | null): Promise<any> {
   if (storedBlock === null) {
-    throw new Error('updateTransactionsRecent Error: dbBlockNumber should be valid number');
+    storedBlock = await getDbRecentBlock();
   }
+
   const recentBlockHex = await fetchRecentBlock();
   const recentBlock = hexStringToDecimal(recentBlockHex);
+
+  if (storedBlock === null) {
+    storedBlock = recentBlock - 1;
+  }
+
   if (storedBlock === recentBlock) {
     console.log('Recent block remains the same ', recentBlockHex);
     return storedBlock;
   }
   let cnt = 0;
-  // start from dbBlockNumber + 1
-  // for (let i = blockNumber - dbBlockNumber - 1; i >= 0; i--, cnt++) {
-  //   const currentBlock = blockNumber - i;
   let currentBlock: number;
   for (currentBlock = storedBlock + 1; currentBlock <= recentBlock; currentBlock++, cnt++) {
     const success = await addNewTransactions(currentBlock);
@@ -186,13 +193,13 @@ async function updateTransactionsRecent(storedBlock: number): Promise<any> {
   return recentBlock;
 }
 
-async function addNewTransactionsInit(limit: number = 10): Promise<any> {
+async function addNewTransactionsInit(limit: number = 10): Promise<number> {
   const blockNumber = await updateRecentBlock();
   console.log(
     `addNewTransactionsInit Start from ${intToHex(blockNumber - limit)} to ${intToHex(blockNumber)}`
   );
-  let currentBlock: number;
-  for (let i = limit, cnt = 0; i >= 0; i--, cnt++) {
+  let currentBlock: number = blockNumber;
+  for (let i = limit; i >= 0; i--) {
     try {
       currentBlock = blockNumber - i;
       const success = await addNewTransactions(currentBlock);
@@ -215,23 +222,37 @@ function sleep(ms: number) {
 
 async function main() {
   const db = await initMongoose();
+
   if (process.env.NODE_ENV !== 'production') {
     await blockModel.deleteMany();
     await hashesModel.deleteMany();
     await transactionModel.deleteMany();
   }
+
   let blockNumber = await getDbRecentBlock();
+
   if (blockNumber === null) {
     const limit = process.env.NODE_ENV !== 'production' ? 10 : 1000;
     blockNumber = await addNewTransactionsInit(limit);
   }
+
+  process.on('SIGTERM', () => {
+    console.log('Stopping worker');
+    db?.disconnect();
+    // process.exit(0);
+  });
+
   while (true) {
-    await processHashes();
-    sleep(5000);
-    blockNumber = await updateTransactionsRecent(blockNumber);
+    try {
+      await processHashes();
+      blockNumber = await updateTransactionsRecent(blockNumber);
+    } catch (error) {
+      const e = error as Error;
+      console.error('Main Error: ', e.message);
+    } finally {
+      sleep(5000);
+    }
   }
-  db?.disconnect();
-  process.exit(0);
 }
 
-main();
+throng({ worker: main, count: 1 });
