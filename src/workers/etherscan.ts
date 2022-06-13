@@ -1,4 +1,4 @@
-import { fetchRecentBlock, fetchBlockByNumber, fetchTransactionByHash } from './lib/api';
+import { fetchRecentBlock, fetchBlockByNumber, fetchTransactionReceipt } from './lib/api';
 import { hexStringToDecimal, intToHex } from './src/lib/utils';
 import { ITransaction, transactionModel } from './src/models/Transaction';
 import { blockModel } from './src/models/Block';
@@ -17,8 +17,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 type ObjectId = Schema.Types.ObjectId;
 
-function isTransactionCompleted(record: ITransaction) {
-  return ['to'].every((key) => record[key] !== null);
+function isContract(record: ITransaction): boolean {
+  return record['to'] === null;
 }
 
 async function getDbRecentBlock(): Promise<number | null> {
@@ -79,7 +79,7 @@ async function removeDbHashes(ids: ObjectId[]): Promise<boolean> {
   return !!result;
 }
 
-async function updateDbTransaction(hash: string, data: ITransaction): Promise<boolean> {
+async function updateDbTransaction(hash: string, data: Partial<ITransaction>): Promise<boolean> {
   const result = await transactionModel.updateOne({ hash }, data);
   return !!result;
 }
@@ -97,9 +97,10 @@ async function processHashes() {
   console.log('processHashes ', hashes.length);
 
   for (const item of hashes) {
-    const transaction = (await fetchTransactionByHash(item.hash)) as ITransaction;
-    if (transaction && isTransactionCompleted(transaction)) {
-      const promise = updateDbTransaction(item.hash, transaction)
+    const receipt = (await fetchTransactionReceipt(item.hash)) as ITransaction;
+    if (receipt && receipt.contractAddress) {
+      const to = receipt.contractAddress as string;
+      const promise = updateDbTransaction(item.hash, { to })
         .then((result) => ({ result, id: item._id }))
         .catch(() => ({
           result: false,
@@ -122,6 +123,15 @@ async function processHashes() {
   }
 }
 
+async function getContractAddress(tHash: string): Promise<string | null> {
+  const result = await fetchTransactionReceipt(tHash);
+  const address = result ? result.contractAddress : null;
+  if (!address) {
+    console.warn('getContractAddress: Transaction Receipt has no contractAddress');
+  }
+  return address;
+}
+
 async function addNewTransactions(blockNumber: number): Promise<boolean> {
   try {
     const blockNumberHex = intToHex(blockNumber);
@@ -131,16 +141,15 @@ async function addNewTransactions(blockNumber: number): Promise<boolean> {
     if (timestamp) timestamp = hexStringToDecimal(timestamp);
     const transactions = result.transactions as ITransaction[];
     if (transactions && transactions.length) {
-      const uncompleted = transactions
-        .filter((item) => !isTransactionCompleted(item))
-        .map((item) => item.hash);
-      if (uncompleted.length) {
-        insertDbHashes(uncompleted);
-      }
-      transactions.forEach((item) => {
-        item.blockNumber = blockNumber;
-        item.timestamp = timestamp;
-      });
+      await Promise.all(
+        transactions.map(async (item) => {
+          item.blockNumber = blockNumber;
+          item.timestamp = timestamp;
+          if (isContract(item)) {
+            item.to = await getContractAddress(item.hash);
+          }
+        })
+      );
       await insertDbTransactions(transactions);
     } else {
       console.warn('addNewTransactions: No transactions in block ' + blockNumberHex);
@@ -232,7 +241,7 @@ async function main() {
   let blockNumber = await getDbRecentBlock();
 
   if (blockNumber === null) {
-    const limit = process.env.NODE_ENV !== 'production' ? 10 : 1000;
+    const limit = process.env.NODE_ENV !== 'production' ? 100 : 1000;
     blockNumber = await addNewTransactionsInit(limit);
   }
 
@@ -246,9 +255,7 @@ async function main() {
     try {
       const blockNumberNew: number = await updateTransactionsRecent(blockNumber);
       if (blockNumberNew === blockNumber) {
-        await Promise.all([processHashes(), sleep(5000)]);
-      } else {
-        await processHashes();
+        await sleep(5000);
       }
       blockNumber = blockNumberNew;
     } catch (error) {
