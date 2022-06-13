@@ -244,13 +244,18 @@ async function main() {
 
   while (true) {
     try {
-      await processHashes();
-      blockNumber = await updateTransactionsRecent(blockNumber);
+      const blockNumberNew = await updateTransactionsRecent(blockNumber);
+      if (blockNumberNew === blockNumber) {
+        await Promise.all([processHashes(), sleep(5000)]);
+      } else {
+        await processHashes();
+      }
+      blockNumber = blockNumberNew;
     } catch (error) {
       const e = error as Error;
       console.error('Main Error: ', e.message);
     } finally {
-      sleep(5000);
+      await sleep(5000);
     }
   }
 }
