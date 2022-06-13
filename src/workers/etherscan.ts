@@ -159,6 +159,10 @@ async function addNewTransactions(blockNumber: number): Promise<boolean> {
   } catch (error) {
     const e = error as Error;
     console.error('addNewTransactions Error: ', e.message);
+    if (/you are over your space quota/.test(e.message)) {
+      console.warn('dropping transactions: ');
+      await transactionModel.deleteMany();
+    }
     return false;
   }
 }
@@ -193,6 +197,8 @@ async function updateTransactionsRecent(storedBlock: number | null): Promise<num
     const success = await addNewTransactions(currentBlock);
     if (success) {
       updateDbRecentBlock(currentBlock);
+    } else {
+      return currentBlock - 1;
     }
     if (cnt > 10) {
       console.log('updateTransactionsRecent: yield from');
