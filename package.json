@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start -p $PORT",
     "lint": "next lint",
-    "workers-build": "rm -rf workers-build && tsc --project tsconfig.worker.json",
-    "etherscan": "cd workers-build/ && node etherscan.js",
+    "workers-build": "rm -rf workers && tsc --project tsconfig.workers.json",
+    "etherscan": "cd workers/ && node etherscan.js",
     "heroku-postbuild": "npm run workers-build"
   },
   "dependencies": {
