@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "incremental": true,
     "sourceMap": true,
-    "outDir": "workers-build",
+    "outDir": "workers",
     "baseUrl": "./src/workers/",
     "paths": {
       "lib/*": ["./src/lib/*.ts"],
