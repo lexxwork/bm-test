@@ -1,8 +1,6 @@
-import mongoose, { model, Schema } from 'mongoose';
+import mongoose, { model, ObjectId, Schema } from 'mongoose';
 const MongoPaging = require('mongo-cursor-pagination');
-import type { FilterQuery, Document, Model, Query } from 'mongoose';
-// import type { DocumentQuery } from 'mongoose';
-import { blockModel } from 'models/Block';
+import type { Document, Model, Query } from 'mongoose';
 
 type BeAnObject = Record<string, any>;
 type DocumentType<T, QueryHelpers = BeAnObject> = T extends { _id: unknown }
@@ -34,7 +32,7 @@ interface IPaginateModel<T> extends Model<DocumentType<T>> {
 const collectionName = 'transactions';
 
 export interface ITransaction {
-  // [key: string]: string | number | boolean | undefined;
+  [key: string]: string | number | boolean | ObjectId | null | undefined;
   blockHash: string;
   blockNumber: number;
   from: string;
