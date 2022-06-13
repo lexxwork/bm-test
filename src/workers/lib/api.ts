@@ -87,3 +87,17 @@ export async function fetchTransactionByHash(
   const resp = await slowFetcher<IEtherScanApiResp<IResultObj>>(url);
   return resp.result;
 }
+
+export async function fetchTransactionReceipt(
+  hash: string
+): Promise<IEtherScanApiResult<IResultObj>> {
+  const params = {
+    ...defaultParams,
+    module: 'proxy',
+    action: 'eth_getTransactionReceipt',
+    txhash: hash,
+  };
+  const url = getUrlWithParams(apiBaseUrl, params);
+  const resp = await slowFetcher<IEtherScanApiResp<IResultObj>>(url);
+  return resp.result;
+}
