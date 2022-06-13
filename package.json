@@ -31,7 +31,6 @@
     "eslint": "8.16.0",
     "eslint-config-next": "12.1.6",
     "isomorphic-fetch": "^3.0.0",
-    "node-fetch": "^3.2.5",
     "pino": "^8.0.0",
     "pino-pretty": "^8.0.0",
     "sass": "^1.52.1",
