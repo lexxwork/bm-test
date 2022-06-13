@@ -1,19 +1,21 @@
-import { fetchRecentBlock, fetchBlockByNumber, fetchTransactionReceipt } from './lib/api';
-import { hexStringToDecimal, intToHex } from './src/lib/utils';
-import { ITransaction, transactionModel } from './src/models/Transaction';
-import { blockModel } from './src/models/Block';
-import { hashesModel, IHash } from './src/models/Hashes';
 import { loadEnvConfig } from '@next/env';
 import path from 'path';
-import initMongoose from './src/lib/mongodb';
-const throng = require('throng');
-
-import type { Schema } from 'mongoose';
 
 if (process.env.NODE_ENV !== 'production') {
   const rootDir = path.join(process.cwd(), '../');
   loadEnvConfig(rootDir);
 }
+
+import initMongoose from './src/lib/mongodb';
+import { fetchRecentBlock, fetchBlockByNumber, fetchTransactionReceipt } from './lib/api';
+import { hexStringToDecimal, intToHex } from './src/lib/utils';
+import { ITransaction, transactionModel } from './src/models/Transaction';
+import { blockModel } from './src/models/Block';
+import { hashesModel, IHash } from './src/models/Hashes';
+
+const throng = require('throng');
+
+import type { Schema } from 'mongoose';
 
 type ObjectId = Schema.Types.ObjectId;
 
