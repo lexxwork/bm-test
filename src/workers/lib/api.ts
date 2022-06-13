@@ -28,8 +28,9 @@ async function slowFetcher<T>(...args: Parameters<typeof fetcher>): Promise<T> {
   let tries = 15;
   while (tries-- > 0) {
     try {
-      await sleep(300);
-      return fetcher(...args);
+      let result: any;
+      await Promise.all([sleep(300), fetcher(...args).then((resp) => (result = resp))]);
+      return result;
     } catch (error) {
       const e = error as Error;
       console.warn('Fetch Error: ', e.message || 'Unknown Error');
