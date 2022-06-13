@@ -162,7 +162,7 @@ async function updateRecentBlock(): Promise<number> {
   return blockNumber;
 }
 
-async function updateTransactionsRecent(storedBlock: number | null): Promise<any> {
+async function updateTransactionsRecent(storedBlock: number | null): Promise<number> {
   if (storedBlock === null) {
     storedBlock = await getDbRecentBlock();
   }
@@ -244,7 +244,7 @@ async function main() {
 
   while (true) {
     try {
-      const blockNumberNew = await updateTransactionsRecent(blockNumber);
+      const blockNumberNew: number = await updateTransactionsRecent(blockNumber);
       if (blockNumberNew === blockNumber) {
         await Promise.all([processHashes(), sleep(5000)]);
       } else {
