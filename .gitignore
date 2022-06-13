@@ -14,7 +14,7 @@
 
 # production
 /build
-/workers-build
+/workers
 
 # misc
 .DS_Store
