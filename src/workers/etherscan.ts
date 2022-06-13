@@ -241,7 +241,7 @@ async function main() {
   let blockNumber = await getDbRecentBlock();
 
   if (blockNumber === null) {
-    const limit = process.env.NODE_ENV !== 'production' ? 100 : 1000;
+    const limit = process.env.NODE_ENV !== 'production' ? 10 : 1000;
     blockNumber = await addNewTransactionsInit(limit);
   }
 
