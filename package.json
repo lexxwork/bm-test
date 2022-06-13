@@ -4,12 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npm run workers-build",
     "start": "next start -p $PORT",
     "lint": "next lint",
     "workers-build": "rm -rf workers && tsc --project tsconfig.workers.json",
-    "etherscan": "cd workers/ && node etherscan.js",
-    "heroku-postbuild": "npm run workers-build"
+    "etherscan": "cd workers/ && node etherscan.js"
   },
   "dependencies": {
     "isomorphic-fetch": "^3.0.0",
