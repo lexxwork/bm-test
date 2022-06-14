@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "workers-build",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "workers-build-npm",
+			"detail": "rm -rf workers && tsc --project tsconfig.workers.json"
+		}
+	]
+}

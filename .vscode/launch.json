@@ -7,22 +7,18 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "worker test",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "name": "workers/etherscan",
+      "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/src/workers/etherscan.ts",
-      "preLaunchTask": "tsc: build - tsconfig.worker.json",
+      "preLaunchTask": "workers-build-npm",
       "envFile": "${workspaceFolder}/.env.local",
-      "outFiles": [
-        "${workspaceFolder}/workers-build/**/*.js"
-      ]
+      "outFiles": ["${workspaceFolder}/workers/**/*.js"]
     },
     {
       "name": "Next.js: debug server-side",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run dev"
-    },
+    }
   ]
 }
