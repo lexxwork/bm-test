@@ -32,7 +32,7 @@ interface IPaginateModel<T> extends Model<DocumentType<T>> {
 const collectionName = 'transactions';
 
 export interface ITransaction {
-  [key: string]: string | number | boolean | ObjectId | null | undefined;
+  // [key: string]: string | number | boolean | ObjectId | null | undefined;
   blockHash: string;
   blockNumber: number;
   from: string;
