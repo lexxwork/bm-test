@@ -7,6 +7,7 @@ import type { ITransactionsFilterQuery } from 'pages/api/transactions';
 import type { IFilterQuery } from 'components/SearchFilter';
 import styles from './index.module.scss';
 import appStyles from 'styles/App.module.scss';
+import type { ITransaction } from 'models/Transaction';
 
 export type CursorsInfo = ITransactionsFilterQuery['cursor'];
 
@@ -24,10 +25,12 @@ export type TransactionsTableOpts = ITransactionsFilterQuery & {
   statesCallback: (options: { cursors: CursorPagesInfo; pagesCount: number }) => void;
 };
 
+const fields = header.map((x) => x.colId) as (keyof ITransaction) [];
+
 // eslint-disable-next-line react/display-name
 export const TransactionsTableFC = memo<TransactionsTableOpts>(
   ({ rowsLimit, filterQuery, cursor, limit = 100, frameNumber, statesCallback }) => {
-    const { data, isLoading, error } = useGetTransactions({ filterQuery, cursor, limit });
+    const { data, isLoading, error } = useGetTransactions({ filterQuery, cursor, limit, fields });
     let cursors: CursorPagesInfo;
     let frame: ITableRowItem[] = [];
     let pagesCount = 0;

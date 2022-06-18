@@ -8,10 +8,16 @@ import type { FilterQuery } from 'mongoose';
 import type { IPaginateResult, ITransaction } from 'models/Transaction';
 import type { IFilterQuery } from 'components/SearchFilter';
 
+type TransactionKeys = keyof ITransaction;
+
+type TransactionFields = {
+  [Property in TransactionKeys]?: 1;
+};
 export interface ITransactionsFilterQuery {
   filterQuery?: IFilterQuery;
   cursor?: { previous?: string; next?: string };
   limit?: number;
+  fields?: TransactionKeys[];
 }
 
 const limitMax = 100;
@@ -22,7 +28,7 @@ const handler: NextApiHandler = async (
 ) => {
   try {
     let dbQuery: FilterQuery<{}> = {};
-    let { filterQuery, cursor, limit } = JSON.parse(req.body) as ITransactionsFilterQuery;
+    let { filterQuery, cursor, limit, fields: fieldsArr } = JSON.parse(req.body) as ITransactionsFilterQuery;
 
     if (filterQuery) {
       const validQuery =
@@ -56,10 +62,17 @@ const handler: NextApiHandler = async (
 
     limit = limit && !isNaN(limit) && limit > 0 && limit < limitMax ? limit : limitMax;
 
+    let fields: TransactionFields | undefined;
+
+    if (fieldsArr && fieldsArr.length) {
+      fields = Object.fromEntries(fieldsArr.map((x) => [x, 1]));
+    }
+
     await initMongoose();
 
     const result = await transactionModel.paginate({
       query: dbQuery,
+      fields,
       limit,
       ...cursor,
     });
